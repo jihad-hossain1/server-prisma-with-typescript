@@ -12,7 +12,13 @@ import bcrypt from 'bcrypt';
 const getAllUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("first");
     try {
-        const users = yield prisma.user.findMany();
+        const users = yield prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                name: true
+            }
+        });
         return res.json(users);
     }
     catch (error) {

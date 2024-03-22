@@ -18,11 +18,14 @@ app.get('/', async (req: Request, res: Response) => {
 })
 
 
-import userRouter from './routes/userRoute.js'
+import userRouter from './routes/userRoute.js';
+import postRouter from './routes/postRoute.js';
 
 
 
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/posts', postRouter);
+
 
 
 

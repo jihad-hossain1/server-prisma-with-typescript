@@ -5,7 +5,13 @@ import bcrypt from 'bcrypt'
 const getAllUser = async (req: Request, res: Response) => {
     console.log("first")
     try {
-        const users = await prisma.user.findMany();
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                name: true
+            }
+        });
         return res.json(users);
     } catch (error) {
         return res.status(500).json(error)
@@ -52,6 +58,8 @@ const registerUser = async (req: Request, res: Response) => {
         return res.status(500).json(error)
     }
 }
+
+
 
 
 export { getAllUser, registerUser }

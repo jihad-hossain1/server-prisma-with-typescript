@@ -18,7 +18,9 @@ app.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.json({ message: 'hello world' });
 }));
 import userRouter from './routes/userRoute.js';
+import postRouter from './routes/postRoute.js';
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/posts', postRouter);
 app.listen(port, () => {
     console.log(`connect to server on port ${port}`);
 });
