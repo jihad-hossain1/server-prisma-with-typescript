@@ -60,6 +60,34 @@ const registerUser = async (req: Request, res: Response) => {
 }
 
 
+export const findUserWithPosts = async (req: Request, res: Response): Promise<Response<any, Record<string, any>> | void> => {
+    const { id } = req.params as { id: string }
 
+    try {
+
+        if (!id) {
+            return res.status(401).json({ message: 'user id is required or not valid' })
+        }
+
+        if (id) {
+            const findUser = await prisma.user.findFirst({
+                where: { id: Number(id) }, select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    articles: true
+                }
+            })
+
+            if (!findUser) {
+                return res.status(401).json({ message: 'user are not found' })
+            }
+
+            return res.json(findUser)
+        }
+    } catch (error) {
+        return res.status(500).json(error)
+    }
+}
 
 export { getAllUser, registerUser }

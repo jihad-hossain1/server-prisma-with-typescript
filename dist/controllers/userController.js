@@ -58,5 +58,30 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.status(500).json(error);
     }
 });
+export const findUserWithPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        if (!id) {
+            return res.status(401).json({ message: 'user id is required or not valid' });
+        }
+        if (id) {
+            const findUser = yield prisma.user.findFirst({
+                where: { id: Number(id) }, select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    articles: true
+                }
+            });
+            if (!findUser) {
+                return res.status(401).json({ message: 'user are not found' });
+            }
+            return res.json(findUser);
+        }
+    }
+    catch (error) {
+        return res.status(500).json(error);
+    }
+});
 export { getAllUser, registerUser };
 //# sourceMappingURL=userController.js.map
