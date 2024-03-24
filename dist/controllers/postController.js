@@ -76,6 +76,25 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         else if (title == 0 || !id) {
             return res.status(401).json({ message: "postid are empty not allow" });
         }
+        const userAreValid = yield prisma.user.findFirst({
+            where: { id: Number(userId) },
+        });
+        const userPost = yield prisma.article.findFirst({ where: { id } });
+        if (!userAreValid) {
+            return res
+                .status(400)
+                .json({ message: "user are not valid for update this post" });
+        }
+        else if (!userPost) {
+            return res.status(401).json({ message: "post are not found!" });
+        }
+        else if (userPost.userId !== userId) {
+            return res
+                .status(401)
+                .json({
+                message: 'You are not able change to this content, cause "YOU ARE NOT AUTHOR"',
+            });
+        }
         const update = yield prisma.article.update({
             where: {
                 id: id,
