@@ -61,5 +61,35 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(500).json(error);
     }
 });
-export { getPosts, createPost };
+const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content, userId, id } = req.body;
+    try {
+        if (title == "") {
+            return res.status(401).json({ message: "title are empty not allow" });
+        }
+        else if (content == "") {
+            return res.status(401).json({ message: "content are empty not allow" });
+        }
+        else if (userId == 0 || !userId) {
+            return res.status(401).json({ message: "userId are empty not allow" });
+        }
+        else if (title == 0 || !id) {
+            return res.status(401).json({ message: "postid are empty not allow" });
+        }
+        const update = yield prisma.article.update({
+            where: {
+                id: id,
+            },
+            data: {
+                title,
+                content,
+            },
+        });
+        return res.status(200).json({ post: update, message: "update ok" });
+    }
+    catch (error) {
+        return res.status(500).json(error);
+    }
+});
+export { getPosts, createPost, updatePost };
 //# sourceMappingURL=postController.js.map
