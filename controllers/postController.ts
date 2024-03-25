@@ -259,6 +259,57 @@ const updateComment = async (req: Request, res: Response) => {
   }
 };
 
+
+const createCommentReply = async (req: Request, res: Response) => {
+  const { userId, commentId, content } = req.body;
+
+  try {
+    if (!userId) {
+      return res.status(401).json({ message: "user id is required" });
+    } else if (!commentId) {
+      return res.status(401).json({ message: "post id is required" });
+    } else if (!content || content == "") {
+      return res.status(401).json({ message: "post content is required" });
+    }
+
+    const findPost = await prisma.article.findFirst({
+      where: { id: Number(commentId) },
+    });
+
+    if (!findPost) {
+      return res.status(401).json({ message: "post is not found!" });
+    }
+
+    const userAreValid = await prisma.user.findFirst({
+      where: { id: Number(userId) },
+    });
+
+    if (!userAreValid) {
+      return res
+        .status(401)
+        .json({ message: "user are not found, you are not valid user" });
+    }
+
+    const newComment = await prisma.reply.create({
+      data: {
+        userId,
+        commentId,
+        content,
+      },
+    });
+
+    if (!newComment) {
+      return res.status(401).json({ message: "comment are not create!" });
+    }
+
+    return res
+      .status(201)
+      .json({ message: "comment create ok.", comment: newComment });
+  } catch (error) {
+    return res.status(500).json({ message: "error from sever", error });
+  }
+};
+
 export {
   getPosts,
   createPost,
