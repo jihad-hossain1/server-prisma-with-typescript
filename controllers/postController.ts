@@ -115,6 +115,8 @@ const updatePost = async (req: Request, res: Response) => {
   }
 };
 
+
+
 const deletePost = async (req: Request, res: Response) => {
   const { id, userId } = req.body;
   try {
@@ -147,8 +149,8 @@ const deletePost = async (req: Request, res: Response) => {
       where: { id: Number(id) },
     });
 
-    if (!deletePost) {
-      return res.json({ message: "post are delete" });
+    if (!deletedPost) {
+      return res.json({ message: "post are not delete" });
     }
 
     return res.status(200).json({ message: "post delete ok." });
@@ -157,4 +159,54 @@ const deletePost = async (req: Request, res: Response) => {
   }
 };
 
-export { getPosts, createPost, updatePost, deletePost };
+const createComment = async (req: Request, res: Response) => {
+  const { userId, postId, content } = req.body;
+
+  try {
+    if (!userId) {
+      return res.status(401).json({ message: "user id is required" });
+    } else if (!postId) {
+      return res.status(401).json({ message: "post id is required" });
+    } else if (!content || content == "") {
+      return res.status(401).json({ message: "post content is required" });
+    }
+
+    const findPost = await prisma.article.findFirst({
+      where: { id: Number(postId) },
+    });
+
+    if (!findPost) {
+      return res.status(401).json({ message: "post is not found!" });
+    }
+
+    const userAreValid = await prisma.user.findFirst({
+      where: { id: Number(userId) },
+    });
+
+    if (!userAreValid) {
+      return res
+        .status(401)
+        .json({ message: "user are not found, you are not valid user" });
+    }
+
+    const newComment = await prisma.comment.create({
+      data: {
+        userId,
+        postId,
+        content,
+      },
+    });
+
+    if (!newComment) {
+      return res.status(401).json({ message: "comment are not create!" });
+    }
+
+    return res
+      .status(201)
+      .json({ message: "comment create ok.", comment: newComment });
+  } catch (error) {
+    return res.status(500).json({ message: "error from sever", error });
+  }
+};
+
+export { getPosts, createPost, updatePost, deletePost, createComment };

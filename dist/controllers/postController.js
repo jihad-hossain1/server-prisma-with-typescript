@@ -113,7 +113,7 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, userId } = req.body;
     try {
-        if (!id || id == "") {
+        if (!id) {
             return res.status(401).json({ message: "post id is required" });
         }
         else if (!userId) {
@@ -136,8 +136,8 @@ const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const deletedPost = yield prisma.article.delete({
             where: { id: Number(id) },
         });
-        if (!deletePost) {
-            return res.json({ message: "post are delete" });
+        if (!deletedPost) {
+            return res.json({ message: "post are not delete" });
         }
         return res.status(200).json({ message: "post delete ok." });
     }
@@ -145,5 +145,49 @@ const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(500).json({ message: "error from server ", error });
     }
 });
-export { getPosts, createPost, updatePost, deletePost };
+const createComment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId, postId, content } = req.body;
+    try {
+        if (!userId) {
+            return res.status(401).json({ message: "user id is required" });
+        }
+        else if (!postId) {
+            return res.status(401).json({ message: "post id is required" });
+        }
+        else if (!content || content == "") {
+            return res.status(401).json({ message: "post content is required" });
+        }
+        const findPost = yield prisma.article.findFirst({
+            where: { id: Number(postId) },
+        });
+        if (!findPost) {
+            return res.status(401).json({ message: "post is not found!" });
+        }
+        const userAreValid = yield prisma.user.findFirst({
+            where: { id: Number(userId) },
+        });
+        if (!userAreValid) {
+            return res
+                .status(401)
+                .json({ message: "user are not found, you are not valid user" });
+        }
+        const newComment = yield prisma.comment.create({
+            data: {
+                userId,
+                postId,
+                content,
+            },
+        });
+        if (!newComment) {
+            return res.status(401).json({ message: "comment are not create!" });
+        }
+        return res
+            .status(201)
+            .json({ message: "comment create ok.", comment: newComment });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "error from sever", error });
+    }
+});
+export { getPosts, createPost, updatePost, deletePost, createComment };
 //# sourceMappingURL=postController.js.map

@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { createPost, deletePost, getPosts, updatePost, } from "../controllers/postController.js";
+import { createComment, createPost, deletePost, getPosts, updatePost, } from "../controllers/postController.js";
 const router = Router();
 router.route("/create-post").post(createPost);
 router.route("/all-posts").get(getPosts);
 router.route("/update-post").patch(updatePost);
 router.route("/delete-post").delete(deletePost);
+router.route("/create-comment").post(createComment);
 export default router;
 //# sourceMappingURL=postRoute.js.map
