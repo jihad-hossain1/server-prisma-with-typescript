@@ -110,5 +110,40 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(500).json(error);
     }
 });
-export { getPosts, createPost, updatePost };
+const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, userId } = req.body;
+    try {
+        if (!id || id == "") {
+            return res.status(401).json({ message: "post id is required" });
+        }
+        else if (!userId) {
+            return res.status(401).json({ message: "user id is required" });
+        }
+        const findPost = yield prisma.article.findFirst({
+            where: { id: Number(id) },
+        });
+        if (!findPost) {
+            return res.status(401).json({ message: "post is not found!" });
+        }
+        const userAreValid = yield prisma.user.findFirst({
+            where: { id: Number(userId) },
+        });
+        if ((userAreValid === null || userAreValid === void 0 ? void 0 : userAreValid.id) !== (findPost === null || findPost === void 0 ? void 0 : findPost.userId)) {
+            return res.status(401).json({
+                message: "you are not able to delete this post, 'YOUR ARE NOT AUTHOR THIS POST' ",
+            });
+        }
+        const deletedPost = yield prisma.article.delete({
+            where: { id: Number(id) },
+        });
+        if (!deletePost) {
+            return res.json({ message: "post are delete" });
+        }
+        return res.status(200).json({ message: "post delete ok." });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "error from server ", error });
+    }
+});
+export { getPosts, createPost, updatePost, deletePost };
 //# sourceMappingURL=postController.js.map

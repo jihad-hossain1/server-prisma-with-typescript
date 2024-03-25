@@ -114,4 +114,47 @@ const updatePost = async (req: Request, res: Response) => {
     return res.status(500).json(error);
   }
 };
-export { getPosts, createPost, updatePost };
+
+const deletePost = async (req: Request, res: Response) => {
+  const { id, userId } = req.body;
+  try {
+    if (!id) {
+      return res.status(401).json({ message: "post id is required" });
+    } else if (!userId) {
+      return res.status(401).json({ message: "user id is required" });
+    }
+
+    const findPost = await prisma.article.findFirst({
+      where: { id: Number(id) },
+    });
+
+    if (!findPost) {
+      return res.status(401).json({ message: "post is not found!" });
+    }
+
+    const userAreValid = await prisma.user.findFirst({
+      where: { id: Number(userId) },
+    });
+
+    if (userAreValid?.id !== findPost?.userId) {
+      return res.status(401).json({
+        message:
+          "you are not able to delete this post, 'YOUR ARE NOT AUTHOR THIS POST' ",
+      });
+    }
+
+    const deletedPost = await prisma.article.delete({
+      where: { id: Number(id) },
+    });
+
+    if (!deletePost) {
+      return res.json({ message: "post are delete" });
+    }
+
+    return res.status(200).json({ message: "post delete ok." });
+  } catch (error) {
+    return res.status(500).json({ message: "error from server ", error });
+  }
+};
+
+export { getPosts, createPost, updatePost, deletePost };
