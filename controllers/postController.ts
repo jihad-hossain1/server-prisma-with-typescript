@@ -116,7 +116,6 @@ const updatePost = async (req: Request, res: Response) => {
 };
 
 
-
 const deletePost = async (req: Request, res: Response) => {
   const { id, userId } = req.body;
   try {
@@ -209,4 +208,62 @@ const createComment = async (req: Request, res: Response) => {
   }
 };
 
-export { getPosts, createPost, updatePost, deletePost, createComment };
+const updateComment = async (req: Request, res: Response) => {
+  const { content, userId, postId, id } = req.body;
+  try {
+    if (content == "") {
+      return res.status(401).json({ message: "content are empty not allow" });
+    } else if (userId == 0 || !userId) {
+      return res.status(401).json({ message: "userId are empty not allow" });
+    } else if (!postId) {
+      return res.status(401).json({ message: "postid are empty not allow" });
+    }
+
+    const userAreValid = await prisma.user.findFirst({
+      where: { id: Number(userId) },
+    });
+
+    const postComment = await prisma.comment.findFirst({
+      where: { id: Number(id) },
+    });
+
+    if (!userAreValid) {
+      return res
+        .status(400)
+        .json({ message: "user are not valid for update this post" });
+    } else if (!postComment) {
+      return res.status(401).json({ message: "post are not found!" });
+    } else if (postComment.userId !== Number(userId)) {
+      return res.status(401).json({
+        message:
+          'You are not able change to this content, cause "YOU ARE NOT AUTHOR"',
+      });
+    }
+
+    const update = await prisma.comment.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        content,
+      },
+    });
+
+    if (!update) {
+      return res.status(502).json({ message: "comment are not updated" });
+    }
+
+    return res.status(200).json({ comment: update, message: "update ok" });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
+export {
+  getPosts,
+  createPost,
+  updatePost,
+  deletePost,
+  createComment,
+  updateComment,
+};
