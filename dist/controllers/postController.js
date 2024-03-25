@@ -17,10 +17,10 @@ const getPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     select: {
                         id: true,
                         name: true,
-                        email: true
-                    }
-                }
-            }
+                        email: true,
+                    },
+                },
+            },
         });
         return res.json(posts);
     }
@@ -32,30 +32,32 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     var _a;
     const { title, content, userId } = req.body;
     try {
-        if (!title && title == '') {
-            return res.json({ message: 'title are required' });
+        if (!title && title == "") {
+            return res.json({ message: "title are required" });
         }
-        else if (!content && content == '') {
-            return res.json({ message: 'content are required' });
+        else if (!content && content == "") {
+            return res.json({ message: "content are required" });
         }
         else if ((_a = !userId) !== null && _a !== void 0 ? _a : userId == 0) {
-            return res.json({ message: 'userid are required' });
+            return res.json({ message: "userid are required" });
         }
         const previousUser = yield prisma.user.findFirst({
-            where: { id: userId }
+            where: { id: userId },
         });
         console.log(previousUser);
         if (!previousUser) {
-            return res.json({ message: 'user are not found' });
+            return res.json({ message: "user are not found" });
         }
         const newPost = yield prisma.article.create({
             data: {
                 title,
                 content,
-                userId: userId
-            }
+                userId: userId,
+            },
         });
-        return res.status(201).json({ message: 'post create successfull', newPost });
+        return res
+            .status(201)
+            .json({ message: "post create successfull", newPost });
     }
     catch (error) {
         return res.status(500).json(error);
@@ -89,9 +91,7 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return res.status(401).json({ message: "post are not found!" });
         }
         else if (userPost.userId !== userId) {
-            return res
-                .status(401)
-                .json({
+            return res.status(401).json({
                 message: 'You are not able change to this content, cause "YOU ARE NOT AUTHOR"',
             });
         }
@@ -237,5 +237,49 @@ const updateComment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return res.status(500).json(error);
     }
 });
-export { getPosts, createPost, updatePost, deletePost, createComment, updateComment, };
+const createCommentReply = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId, commentId, content } = req.body;
+    try {
+        if (!userId) {
+            return res.status(401).json({ message: "user id is required" });
+        }
+        else if (!commentId) {
+            return res.status(401).json({ message: "post id is required" });
+        }
+        else if (!content || content == "") {
+            return res.status(401).json({ message: "post content is required" });
+        }
+        const findPostComment = yield prisma.comment.findFirst({
+            where: { id: Number(commentId) },
+        });
+        if (!findPostComment) {
+            return res.status(401).json({ message: "post comment is not found!" });
+        }
+        const userAreValid = yield prisma.user.findFirst({
+            where: { id: Number(userId) },
+        });
+        if (!userAreValid) {
+            return res
+                .status(401)
+                .json({ message: "user are not found, you are not valid user" });
+        }
+        const newCommentReply = yield prisma.reply.create({
+            data: {
+                userId,
+                commentId,
+                content,
+            },
+        });
+        if (!newCommentReply) {
+            return res.status(401).json({ message: "reply are not create!" });
+        }
+        return res
+            .status(201)
+            .json({ message: "reply create ok.", reply: newCommentReply });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "error from sever", error });
+    }
+});
+export { getPosts, createPost, updatePost, deletePost, createComment, updateComment, createCommentReply, };
 //# sourceMappingURL=postController.js.map

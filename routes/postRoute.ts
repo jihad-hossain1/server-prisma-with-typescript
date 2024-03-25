@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createComment,
+  createCommentReply,
   createPost,
   deletePost,
   getPosts,
@@ -17,5 +18,7 @@ router.route("/delete-post").delete(deletePost);
 
 router.route("/create-comment").post(createComment);
 router.route("/update-comment").patch(updateComment);
+
+router.route("/comments/create-reply").post(createCommentReply);
 
 export default router;

@@ -1,68 +1,63 @@
 import { Request, Response } from "express";
 import prisma from "../prisma/index.js";
 
-
 const getPosts = async (req: Request, res: Response) => {
-    // console.log("first")
-    try {
-        const posts = await prisma.article.findMany({
-
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                }
-            }
-        });
-        return res.json(posts);
-    } catch (error) {
-        return res.status(500).json(error)
-    }
-}
-
+  // console.log("first")
+  try {
+    const posts = await prisma.article.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return res.json(posts);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
 
 const createPost = async (req: Request, res: Response) => {
-    const { title, content, userId } = req.body;
+  const { title, content, userId } = req.body;
 
-
-    try {
-
-        if (!title && title == '') {
-            return res.json({ message: 'title are required' })
-        } else if (!content && content == '') {
-            return res.json({ message: 'content are required' })
-        } else if (!userId ?? userId == 0) {
-            return res.json({ message: 'userid are required' })
-        }
-
-        const previousUser = await prisma.user.findFirst({
-            where: { id: userId }
-        });
-
-        console.log(previousUser)
-
-        if (!previousUser) {
-            return res.json({ message: 'user are not found' })
-        }
-
-        const newPost = await prisma.article.create({
-            data: {
-                title,
-                content,
-                userId: userId
-            }
-        });
-
-        return res.status(201).json({ message: 'post create successfull', newPost })
-
-    } catch (error) {
-        return res.status(500).json(error)
+  try {
+    if (!title && title == "") {
+      return res.json({ message: "title are required" });
+    } else if (!content && content == "") {
+      return res.json({ message: "content are required" });
+    } else if (!userId ?? userId == 0) {
+      return res.json({ message: "userid are required" });
     }
-}
 
+    const previousUser = await prisma.user.findFirst({
+      where: { id: userId },
+    });
+
+    console.log(previousUser);
+
+    if (!previousUser) {
+      return res.json({ message: "user are not found" });
+    }
+
+    const newPost = await prisma.article.create({
+      data: {
+        title,
+        content,
+        userId: userId,
+      },
+    });
+
+    return res
+      .status(201)
+      .json({ message: "post create successfull", newPost });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
 
 const updatePost = async (req: Request, res: Response) => {
   const { title, content, userId, id } = req.body;
@@ -77,28 +72,25 @@ const updatePost = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "postid are empty not allow" });
     }
 
-      const userAreValid = await prisma.user.findFirst({
-        where: { id: Number(userId) },
+    const userAreValid = await prisma.user.findFirst({
+      where: { id: Number(userId) },
+    });
+
+    const userPost = await prisma.article.findFirst({ where: { id } });
+
+    if (!userAreValid) {
+      return res
+        .status(400)
+        .json({ message: "user are not valid for update this post" });
+    } else if (!userPost) {
+      return res.status(401).json({ message: "post are not found!" });
+    } else if (userPost.userId !== userId) {
+      return res.status(401).json({
+        message:
+          'You are not able change to this content, cause "YOU ARE NOT AUTHOR"',
       });
+    }
 
-      const userPost = await prisma.article.findFirst({ where: { id } });
-
-      if (!userAreValid) {
-        return res
-          .status(400)
-          .json({ message: "user are not valid for update this post" });
-      } else if (!userPost) {
-        return res.status(401).json({ message: "post are not found!" });
-      } else if (userPost.userId !== userId) {
-        return res
-          .status(401)
-          .json({
-            message:
-              'You are not able change to this content, cause "YOU ARE NOT AUTHOR"',
-          });
-      }
-
-      
     const update = await prisma.article.update({
       where: {
         id: id,
@@ -114,7 +106,6 @@ const updatePost = async (req: Request, res: Response) => {
     return res.status(500).json(error);
   }
 };
-
 
 const deletePost = async (req: Request, res: Response) => {
   const { id, userId } = req.body;
@@ -259,7 +250,6 @@ const updateComment = async (req: Request, res: Response) => {
   }
 };
 
-
 const createCommentReply = async (req: Request, res: Response) => {
   const { userId, commentId, content } = req.body;
 
@@ -272,12 +262,12 @@ const createCommentReply = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "post content is required" });
     }
 
-    const findPost = await prisma.article.findFirst({
+    const findPostComment = await prisma.comment.findFirst({
       where: { id: Number(commentId) },
     });
 
-    if (!findPost) {
-      return res.status(401).json({ message: "post is not found!" });
+    if (!findPostComment) {
+      return res.status(401).json({ message: "post comment is not found!" });
     }
 
     const userAreValid = await prisma.user.findFirst({
@@ -290,7 +280,7 @@ const createCommentReply = async (req: Request, res: Response) => {
         .json({ message: "user are not found, you are not valid user" });
     }
 
-    const newComment = await prisma.reply.create({
+    const newCommentReply = await prisma.reply.create({
       data: {
         userId,
         commentId,
@@ -298,13 +288,13 @@ const createCommentReply = async (req: Request, res: Response) => {
       },
     });
 
-    if (!newComment) {
-      return res.status(401).json({ message: "comment are not create!" });
+    if (!newCommentReply) {
+      return res.status(401).json({ message: "reply are not create!" });
     }
 
     return res
       .status(201)
-      .json({ message: "comment create ok.", comment: newComment });
+      .json({ message: "reply create ok.", reply: newCommentReply });
   } catch (error) {
     return res.status(500).json({ message: "error from sever", error });
   }
@@ -317,4 +307,5 @@ export {
   deletePost,
   createComment,
   updateComment,
+  createCommentReply,
 };
