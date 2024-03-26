@@ -199,6 +199,56 @@ const createComment = async (req: Request, res: Response) => {
   }
 };
 
+const getCommentsByPostId = async (req: Request, res: Response) => {
+  const { id } = req.params as { id: string };
+
+  try {
+    if (!id) {
+      return res.status(401).json({ message: "must be post id is required" });
+    }
+
+    const isPostAreValid = await prisma.article.findFirst({
+      where: { id: Number(id) },
+    });
+
+    if (!isPostAreValid) {
+      return res.status(400).json({ message: "post are not found" });
+    }
+
+    const commentsByPost = await prisma.comment.findMany({
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        userId: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        replies: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            userId: true,
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return res.json(commentsByPost);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error, message: "you got an error from server" });
+  }
+};
 const updateComment = async (req: Request, res: Response) => {
   const { content, userId, postId, id } = req.body;
   try {
@@ -300,6 +350,61 @@ const createCommentReply = async (req: Request, res: Response) => {
   }
 };
 
+const updateReply = async (req: Request, res: Response) => {
+  const { content, userId, id } = req.body;
+  const { commentId } = req.params as { commentId: string };
+
+  try {
+    if (content == "") {
+      return res.status(401).json({ message: "content are empty not allow" });
+    } else if (userId == 0 || !userId) {
+      return res.status(401).json({ message: "userId are empty not allow" });
+    } else if (!commentId) {
+      return res.status(401).json({ message: "commentId are empty not allow" });
+    }
+
+    const userAreValid = await prisma.user.findFirst({
+      where: { id: Number(userId) },
+    });
+
+    const commentReply = await prisma.reply.findFirst({
+      where: { id: Number(id) },
+    });
+
+    if (!userAreValid) {
+      return res
+        .status(400)
+        .json({ message: "user are not valid for update this post" });
+    } else if (!commentReply) {
+      return res.status(401).json({ message: "reply are not found!" });
+    } else if (commentReply.userId !== Number(userId)) {
+      return res.status(401).json({
+        message:
+          'You are not able change to this content, cause "YOU ARE NOT AUTHOR"',
+      });
+    }
+
+    const update = await prisma.reply.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        content,
+      },
+    });
+
+    if (!update) {
+      return res.status(502).json({ message: "reply are not updated" });
+    }
+
+    return res
+      .status(200)
+      .json({ updatedContent: update.content, message: "update ok" });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
 export {
   getPosts,
   createPost,
@@ -308,4 +413,6 @@ export {
   createComment,
   updateComment,
   createCommentReply,
+  updateReply,
+  getCommentsByPostId,
 };

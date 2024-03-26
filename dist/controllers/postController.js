@@ -189,6 +189,52 @@ const createComment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return res.status(500).json({ message: "error from sever", error });
     }
 });
+const getCommentsByPostId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        if (!id) {
+            return res.status(401).json({ message: "must be post id is required" });
+        }
+        const isPostAreValid = yield prisma.article.findFirst({
+            where: { id: Number(id) },
+        });
+        if (!isPostAreValid) {
+            return res.status(400).json({ message: "post are not found" });
+        }
+        const commentsByPost = yield prisma.comment.findMany({
+            select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                userId: true,
+                user: {
+                    select: {
+                        name: true,
+                    },
+                },
+                replies: {
+                    select: {
+                        id: true,
+                        content: true,
+                        createdAt: true,
+                        userId: true,
+                        user: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        return res.json(commentsByPost);
+    }
+    catch (error) {
+        return res
+            .status(500)
+            .json({ error, message: "you got an error from server" });
+    }
+});
 const updateComment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { content, userId, postId, id } = req.body;
     try {
@@ -281,5 +327,56 @@ const createCommentReply = (req, res) => __awaiter(void 0, void 0, void 0, funct
         return res.status(500).json({ message: "error from sever", error });
     }
 });
-export { getPosts, createPost, updatePost, deletePost, createComment, updateComment, createCommentReply, };
+const updateReply = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { content, userId, id } = req.body;
+    const { commentId } = req.params;
+    try {
+        if (content == "") {
+            return res.status(401).json({ message: "content are empty not allow" });
+        }
+        else if (userId == 0 || !userId) {
+            return res.status(401).json({ message: "userId are empty not allow" });
+        }
+        else if (!commentId) {
+            return res.status(401).json({ message: "commentId are empty not allow" });
+        }
+        const userAreValid = yield prisma.user.findFirst({
+            where: { id: Number(userId) },
+        });
+        const commentReply = yield prisma.reply.findFirst({
+            where: { id: Number(id) },
+        });
+        if (!userAreValid) {
+            return res
+                .status(400)
+                .json({ message: "user are not valid for update this post" });
+        }
+        else if (!commentReply) {
+            return res.status(401).json({ message: "post are not found!" });
+        }
+        else if (commentReply.userId !== Number(userId)) {
+            return res.status(401).json({
+                message: 'You are not able change to this content, cause "YOU ARE NOT AUTHOR"',
+            });
+        }
+        const update = yield prisma.reply.update({
+            where: {
+                id: Number(id),
+            },
+            data: {
+                content,
+            },
+        });
+        if (!update) {
+            return res.status(502).json({ message: "reply are not updated" });
+        }
+        return res
+            .status(200)
+            .json({ updatedContent: update.content, message: "update ok" });
+    }
+    catch (error) {
+        return res.status(500).json(error);
+    }
+});
+export { getPosts, createPost, updatePost, deletePost, createComment, updateComment, createCommentReply, updateReply, getCommentsByPostId, };
 //# sourceMappingURL=postController.js.map
