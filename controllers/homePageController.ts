@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 const homePage = async (req: Request, res: Response) => {
-  return res.send(`<!DOCTYPE html>
+   res.send(`<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
