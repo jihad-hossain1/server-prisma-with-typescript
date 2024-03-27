@@ -249,6 +249,7 @@ const getCommentsByPostId = async (req: Request, res: Response) => {
       .json({ error, message: "you got an error from server" });
   }
 };
+
 const updateComment = async (req: Request, res: Response) => {
   const { content, userId, postId, id } = req.body;
   try {
@@ -405,6 +406,29 @@ const updateReply = async (req: Request, res: Response) => {
   }
 };
 
+const createPostMany = async (req: Request, res: Response) => {
+  const { posts } = req.body;
+
+  try {
+    const findIds = posts?.map((item: { id: number }) => item.id);
+
+    const mainPosts = await prisma.article.findMany();
+
+    var filtered = mainPosts.filter((item) => findIds.indexOf(item.id) !== -1);
+
+    console.log(filtered);
+    const findManyPosts = await prisma.article.findMany({
+      where: { id: findIds[0] },
+    });
+
+    // const createPosts = await prisma.article.createMany({ data: filtered });
+
+    return res.status(201).json({ message: "ok", findManyPosts });
+  } catch (error) {
+    res.status(500).json({ message: "error from server", error });
+  }
+};
+
 export {
   getPosts,
   createPost,
@@ -415,4 +439,5 @@ export {
   createCommentReply,
   updateReply,
   getCommentsByPostId,
+  createPostMany,
 };

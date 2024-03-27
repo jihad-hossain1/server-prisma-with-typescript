@@ -3,6 +3,7 @@ import {
   createComment,
   createCommentReply,
   createPost,
+  createPostMany,
   deletePost,
   getCommentsByPostId,
   getPosts,
@@ -17,6 +18,7 @@ router.route("/create-post").post(createPost);
 router.route("/all-posts").get(getPosts);
 router.route("/update-post").patch(updatePost);
 router.route("/delete-post").delete(deletePost);
+router.route("/create-many").post(createPostMany);
 
 router.route("/:id/comments").get(getCommentsByPostId);
 router.route("/create-comment").post(createComment);

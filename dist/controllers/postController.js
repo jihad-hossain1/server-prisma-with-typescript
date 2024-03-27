@@ -352,7 +352,7 @@ const updateReply = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 .json({ message: "user are not valid for update this post" });
         }
         else if (!commentReply) {
-            return res.status(401).json({ message: "post are not found!" });
+            return res.status(401).json({ message: "reply are not found!" });
         }
         else if (commentReply.userId !== Number(userId)) {
             return res.status(401).json({
@@ -378,5 +378,22 @@ const updateReply = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         return res.status(500).json(error);
     }
 });
-export { getPosts, createPost, updatePost, deletePost, createComment, updateComment, createCommentReply, updateReply, getCommentsByPostId, };
+const createPostMany = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { posts } = req.body;
+    try {
+        const findIds = posts === null || posts === void 0 ? void 0 : posts.map((item) => item.id);
+        const mainPosts = yield prisma.article.findMany();
+        var filtered = mainPosts.filter((item) => findIds.indexOf(item.id) !== -1);
+        console.log(filtered);
+        const findManyPosts = yield prisma.article.findMany({
+            where: { id: findIds[0] },
+        });
+        // const createPosts = await prisma.article.createMany({ data: filtered });
+        return res.status(201).json({ message: "ok", findManyPosts });
+    }
+    catch (error) {
+        res.status(500).json({ message: "error from server", error });
+    }
+});
+export { getPosts, createPost, updatePost, deletePost, createComment, updateComment, createCommentReply, updateReply, getCommentsByPostId, createPostMany, };
 //# sourceMappingURL=postController.js.map
