@@ -5,12 +5,15 @@ const getPosts = async (req: Request, res: Response) => {
   // console.log("first")
   try {
     const posts = await prisma.article.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true,
           },
         },
       },

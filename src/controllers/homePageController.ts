@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 const homePage = async (req: Request, res: Response) => {
-   res.send(`<!DOCTYPE html>
+  res.send(`<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
@@ -13,15 +13,17 @@ const homePage = async (req: Request, res: Response) => {
       <div class='bg-zinc-800 min-h-screen text-white'>
     <div class='flex flex-col justify-center items-center min-h-[70vh]'>
     <section class="text-center flex flex-col gap-2">
-    <h4>This Are The Blogs Api.</h4>
-    <a href='https://github.com/jihad-hossain1'>
-    <h1>Contacts Us</h1>
-    </a >
+    <h4 class='text-2xl'>This Are The Blogs Api.</h4>
+    
+   
   <form class='flex flex-col gap-3'>
   <input type="text" class='p-2 bg-transparent rounded max-w-[300px] border border-yellow-600' placeholder='Email' required />
-  <button class='text-sm border px-3 py-1 border-gray-700 rounded-md shadow bg-slate-600' type='submit'>
+  <button class='text-lg border px-3 py-1 border-gray-700 rounded-md shadow bg-slate-600' type='submit'>
   send
   </button>
+  <a class=' border px-3 py-1 border-gray-700 rounded-md shadow bg-slate-600 text-xs' href='https://github.com/jihad-hossain1'>
+    <h1>Contacts Us</h1>
+ </a >
   </form>
     </section>
     </div>
